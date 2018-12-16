@@ -22,10 +22,10 @@ public class RouteSim {
 		this.initializeDistanceTables();
 		this.printDistanceTables();
 		System.out.println("Communication starts: ");
-		for(Node n: topology) {
-			n.sendUpdate();
-			
-		}
+		
+			distanceVectorRouting();
+		
+		
 		printDistanceTables();
 	}
 
@@ -84,7 +84,14 @@ public class RouteSim {
 						distanceTable[i][j]=distance;
 					}else {
 						//System.out.println("i j in else are "+nodeID+" "+j);
-						distanceTable[i][j]=999;
+						
+						if(i==j) {
+							distanceTable[i][j]=0;
+						}
+						else {
+							distanceTable[i][j]=999;
+						}
+						
 					}
 
 				}
