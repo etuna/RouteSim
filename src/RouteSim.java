@@ -4,12 +4,14 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class RouteSim {
 	static ArrayList<Node> topology;
 	String filename;
+	static int NUM_OF_ROUNDS=1;
+	static HashMap<Integer,int[][]> distanceTables;
+
 
 	public RouteSim(String filename) {
 		this.filename=filename;
@@ -20,10 +22,10 @@ public class RouteSim {
 		//Main algorithm
 		this.createTopology();
 		this.initializeDistanceTables();
-		this.printDistanceTables();
-		System.out.println("Communication starts: ");
+		//this.printDistanceTables();
+		System.out.println("Simulation starts: ");
 		
-			distanceVectorRouting();
+		distanceVectorRouting();
 		
 		
 		printDistanceTables();
@@ -61,7 +63,8 @@ public class RouteSim {
 			topology.add(n);
 
 		}
-
+		
+		
 		printTopology();
 
 	}
@@ -97,6 +100,10 @@ public class RouteSim {
 				}
 			}
 		}
+		distanceTables= new HashMap<Integer,int[][]>();
+		for(Node n: topology) {
+			distanceTables.put(n.getNodeID(),n.getDistanceTable());
+		}
 
 	}
 
@@ -114,65 +121,66 @@ public class RouteSim {
 		System.out.println(" ");
 	}
 
+	/**
+	 * 
+	 */
 	public void printDistanceTables() {
-		System.out.println("Distance tables: ");
+		System.out.println("Distance tables and Forwarding Tables: ");
 		for(Node n: topology) {
 			System.out.println("Node "+n.getNodeID()+":");
 			n.printDistanceTable();
 			System.out.println(" ");
-		}
-	}
-	
-	
-	public boolean tablesSynced() {
-		int [][] prevDistTable = null;
-		for(Node n : topology) {
-			int [][] distTable = n.getDistanceTable();
-			
-			if(prevDistTable==null) {
-				prevDistTable = distTable;
+			for(int i=0; i<n.forwardingPairs.length;i++) {
+					System.out.println(n.forwardingPairs[i].toString());
 			}
-			if(!Arrays.deepEquals(prevDistTable, distTable)) {
-				return false;
-			}
-		}
 		
-		return true;
+		}
 	}
 	
-	public int distanceVectorRouting() {
+
+	
+	public void distanceVectorRouting() {
 		/**
 		 * dxY  = min{cxv + dvy} --- d here is the min of the costs
 		 */
 		
 		
-		while(!tablesSynced()) {
+		while(true) {
+			
+			int ctr =0;
+			System.out.println("************************************************** BEGINNING OF ROUND: "+NUM_OF_ROUNDS+" **************************************************");
 			for(Node n: topology) {
-				n.sendUpdate();
+				if(!n.sendUpdate()) {
+					
+					ctr++;
+				}
 			}
+			//System.out.println(ctr);
+			if(ctr==topology.size())break;
+			NUM_OF_ROUNDS++;
+
+			
+		
 		}
-		
-		
-		
-		return -1;
+		System.out.println("************************************************* TOTAL NUMBER OF ROUNDS: "+NUM_OF_ROUNDS+" *************************************************");
 	}
 	
-	/**
-	 * @param node
-	 * @param neighbor
-	 * @returns the distance between a node and its neighbor
-	 */
-	public int c(Node node, Node neighbor) {
-		
-		return node.getLinkCost().get(neighbor.getNodeID());
-	}
-	
-	
-	
-	public int d(Node neighbor, Node destination) {
-		
-		
-		return -1;
-	}
+//	/**
+//	 * @param node
+//	 * @param neighbor
+//	 * @returns the distance between a node and its neighbor
+//	 */
+//	public int c(Node node, Node neighbor) {
+//		
+//		return node.getLinkCost().get(neighbor.getNodeID());
+//	}
+//	
+//	
+//	
+//	public int d(Node neighbor, Node destination) {
+//		
+//		
+//		return -1;
+//	}
 	
 }
